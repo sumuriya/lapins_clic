@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapprochement des lapins</title>
+
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@600&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  background: #fff0f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'EB Garamond', serif;
+  overflow-x: hidden;
+}
+
+h1 {
+  color: #d6336c;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+#counter {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  color: #b02552;
+}
+
+#message {
+  font-size: 1.1rem;
+  color: #ff6b9a;
+  height: 30px;
+  margin-bottom: 15px;
+  text-align: center;
+  transition: opacity 0.3s;
+}
+
+button {
+  font-size: 3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Conteneur lapins responsive */
+.rabbit-container {
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  aspect-ratio: 5/3; /* garde proportion lapins */
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Lapins */
+.rabbit {
+  position: absolute;
+  bottom: 0;
+  width: 50%;
+  height: 100%;
+  background-image: url("bunnies.png");
+  background-size: 200% 100%; /* 2 moitiés */
+  transition: left 0.3s ease;
+}
+
+/* Lapin gauche → moitié gauche */
+.rabbit.left {
+  left: 0;
+  background-position: left center;
+}
+
+/* Lapin droit → moitié droite */
+.rabbit.right {
+  left: 50%;
+  background-position: right center;
+}
+
+/* Bisou final */
+.kiss-full {
+  position: absolute;
+  width: 80%;
+  max-width: 500px;
+  height: auto;
+  background-image: url("bunnies.png");
+  background-size: cover;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%) scale(0.8);
+  z-index: 10;
+}
+
+/* Cœurs flottants */
+.heart {
+  position: absolute;
+  font-size: 1.5rem;
+  animation: float 2s linear forwards;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-150px) scale(1.2); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<h1>Clique pour les rapprocher !</h1>
+
+<div class="rabbit-container" id="rabbitContainer">
+  <div class="rabbit left"></div>
+  <div class="rabbit right"></div>
+</div>
+
+<div id="counter">0 ❤️ envoyés</div>
+<div id="message"></div>
+<button id="loveButton">💖</button>
+
+<script>
+let count = 0;
+const maxClicks = 100;
+
+const leftRabbit = document.querySelector('.rabbit.left');
+const rightRabbit = document.querySelector('.rabbit.right');
+const container = document.getElementById("rabbitContainer");
+const button = document.getElementById("loveButton");
+const messageEl = document.getElementById("message");
+
+const messages = [
+  {clicks: 10, text: "Ils sont encore loin..."},
+  {clicks: 25, text: "Ça avance doucement..."},
+  {clicks: 40, text: "Encore un effort !"},
+  {clicks: 60, text: "Ça se rapproche !"},
+  {clicks: 80, text: "Tu y es presque !"},
+  {clicks: 95, text: "Presque collés..."},
+  {clicks: 100, text: "mouah ! 💋"}
+];
+
+function sendLove() {
+  if (count >= maxClicks) return;
+
+  count++;
+  document.getElementById("counter").innerText = count + " ❤️ envoyés";
+
+  // Cœur centré sur le bouton
+  const rect = button.getBoundingClientRect();
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+  heart.innerText = "💗";
+  heart.style.left = rect.left + rect.width/2 + "px";
+  heart.style.top = rect.top + rect.height/2 + "px";
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+
+  // Rapprochement proportionnel
+  const containerWidth = container.offsetWidth;
+  const startLeft = 0;
+  const startRight = containerWidth/2;
+  const endLeft = containerWidth/4;
+  const endRight = containerWidth/4;
+
+  const progress = count / maxClicks;
+  leftRabbit.style.left = (startLeft + (endLeft - startLeft) * progress) + "px";
+  rightRabbit.style.left = (startRight + (endRight - startRight) * progress) + "px";
+
+  // Messages
+  messages.forEach(msg => {
+    if(count === msg.clicks){
+      showMessage(msg.text);
+      if(count === 100) triggerKiss();
+    }
+  });
+}
+
+function showMessage(text){
+  messageEl.innerText = text;
+  messageEl.style.opacity = 1;
+  setTimeout(()=>messageEl.style.opacity=0,2500);
+}
+
+function triggerKiss(){
+  leftRabbit.style.display="none";
+  rightRabbit.style.display="none";
+
+  const kiss = document.createElement("div");
+  kiss.classList.add("kiss-full");
+  container.appendChild(kiss);
+}
+
+button.addEventListener("click", sendLove);
+</script>
+
+</body>
+</html>
